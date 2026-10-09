@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Creator / Developer Portfolio</title>
+  <meta name="description" content="Claude Codeや最新AIを活用したアプリ開発・SNS自動化・インタラクティブコンテンツ構築のポートフォリオ" />
+  <meta property="og:title" content="AI Creator / Developer Portfolio" />
+  <meta property="og:image" content="assets/poster_reel.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Noto Sans JP"', 'system-ui', 'sans-serif'] },
+          colors: {
+            ink: { 950: '#05060a', 900: '#0a0b12', 800: '#11131c', 700: '#1a1d29' },
+            neon: { blue: '#38bdf8', cyan: '#22d3ee', purple: '#a855f7', pink: '#e879f9' },
+          },
+          keyframes: {
+            float: { '0%,100%': { transform: 'translate(0,0)' }, '50%': { transform: 'translate(30px,-40px)' } },
+            shine: { '0%': { backgroundPosition: '0% 50%' }, '100%': { backgroundPosition: '200% 50%' } },
+            eq: { '0%,100%': { transform: 'scaleY(.3)' }, '50%': { transform: 'scaleY(1)' } },
+          },
+          animation: {
+            float: 'float 14s ease-in-out infinite',
+            'float-slow': 'float 22s ease-in-out infinite reverse',
+            shine: 'shine 6s linear infinite',
+            eq: 'eq 0.9s ease-in-out infinite',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { background: #05060a; }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(56,189,248,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,.06) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%);
+    }
+    .text-grad {
+      background: linear-gradient(90deg, #38bdf8, #a855f7, #e879f9, #38bdf8);
+      background-size: 200% auto;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .glow-border { position: relative; }
+    .glow-border::before {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+      background: linear-gradient(135deg, rgba(56,189,248,.55), rgba(168,85,247,.15) 40%, rgba(232,121,249,.5));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+    }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+    video::-webkit-media-controls-panel { background-image: linear-gradient(transparent, rgba(0,0,0,.6)); }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .animate-float, .animate-float-slow, .animate-shine { animation: none !important; }
+    }
+  </style>
+</head>
+
+<body class="font-sans text-slate-200 antialiased selection:bg-neon-purple/40 overflow-x-hidden">
+
+  <!-- ===== Header ===== -->
+  <header id="top-nav" class="fixed inset-x-0 top-0 z-50 transition-colors duration-300">
+    <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+      <a href="#hero" class="text-sm font-black tracking-[0.25em] text-white">
+        <span class="text-grad animate-shine">AI</span>&nbsp;PORTFOLIO
+      </a>
+      <ul class="hidden items-center gap-8 text-sm text-slate-400 md:flex">
+        <li><a href="#works" class="transition hover:text-neon-blue">Works</a></li>
+        <li><a href="#services" class="transition hover:text-neon-blue">Services</a></li>
+        <li><a href="#contact" class="transition hover:text-neon-blue">Contact</a></li>
+      </ul>
+      <a href="#contact" class="rounded-full border border-neon-blue/40 px-4 py-1.5 text-xs font-medium text-neon-blue transition hover:bg-neon-blue/10">
+        お問い合わせ
+      </a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===== 1. Hero ===== -->
+    <section id="hero" class="relative isolate flex min-h-screen items-center overflow-hidden pt-24 pb-16">
+      <div class="grid-bg absolute inset-0 -z-10"></div>
+      <div class="absolute -left-40 top-10 -z-10 h-[28rem] w-[28rem] rounded-full bg-neon-blue/20 blur-[120px] animate-float"></div>
+      <div class="absolute -right-32 bottom-0 -z-10 h-[30rem] w-[30rem] rounded-full bg-neon-purple/25 blur-[130px] animate-float-slow"></div>
+
+      <div class="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.15fr]">
+        <div class="reveal">
+          <p class="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs tracking-widest text-slate-400">
+            <span class="h-1.5 w-1.5 rounded-full bg-neon-cyan shadow-[0_0_10px_#22d3ee]"></span>
+            AVAILABLE FOR WORK
+          </p>
+          <h1 class="text-4xl font-black leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
+            AI Creator<br />
+            <span class="text-grad animate-shine">/ Developer</span><br />
+            Portfolio
+          </h1>
+          <p class="mt-6 max-w-md text-base leading-relaxed text-slate-400 sm:text-lg">
+            Claude Codeや最新AIを活用した<br class="hidden sm:inline" />
+            アプリ開発・SNS自動化・<br class="hidden sm:inline" />
+            インタラクティブコンテンツ構築
+          </p>
+          <div class="mt-9 flex flex-wrap gap-3">
+            <a href="#works" class="rounded-full bg-gradient-to-r from-neon-blue to-neon-purple px-6 py-3 text-sm font-bold text-white shadow-[0_0_30px_rgba(124,58,237,.45)] transition hover:shadow-[0_0_45px_rgba(56,189,248,.6)]">
+              実績を見る
+            </a>
+            <a href="#contact" class="rounded-full border border-white/15 px-6 py-3 text-sm font-medium text-white transition hover:border-neon-purple/60 hover:bg-white/5">
+              相談する
+            </a>
+          </div>
+        </div>
+
+        <!-- Showreel -->
+        <div class="reveal">
+          <div class="glow-border relative overflow-hidden rounded-2xl bg-ink-900 shadow-[0_30px_80px_-20px_rgba(168,85,247,.45)]">
+            <video id="showreel" class="aspect-video w-full object-cover" src="assets/showreel.mp4" poster="assets/poster_reel.jpg"
+                   autoplay muted loop playsinline preload="metadata"></video>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent"></div>
+            <div class="absolute bottom-3 left-4 right-4 flex items-center justify-between gap-3">
+              <span class="text-[10px] font-medium tracking-[0.3em] text-white/70 sm:text-xs">SHOWREEL 2026</span>
+              <button id="sound-toggle" type="button" aria-pressed="false"
+                      class="flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-3 py-1.5 text-xs text-white backdrop-blur transition hover:border-neon-blue/70">
+                <span class="flex h-3 items-end gap-[2px]" aria-hidden="true">
+                  <i class="eq-bar block h-full w-[2px] origin-bottom scale-y-[.3] bg-neon-cyan"></i>
+                  <i class="eq-bar block h-full w-[2px] origin-bottom scale-y-[.3] bg-neon-cyan" style="animation-delay:.2s"></i>
+                  <i class="eq-bar block h-full w-[2px] origin-bottom scale-y-[.3] bg-neon-cyan" style="animation-delay:.4s"></i>
+                </span>
+                <span id="sound-label">サウンド ON</span>
+              </button>
+            </div>
+          </div>
+          <p class="mt-3 text-right text-xs text-slate-500">♪ BGM：オリジナル Lo-Fi トラック</p>
+        </div>
+      </div>
+
+      <a href="#works" class="absolute bottom-6 left-1/2 hidden -translate-x-1/2 text-[10px] tracking-[0.4em] text-slate-500 transition hover:text-neon-blue sm:block">
+        SCROLL ↓
+      </a>
+    </section>
+
+    <!-- ===== 2. Works ===== -->
+    <section id="works" class="relative py-24 sm:py-32">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="reveal mb-14">
+          <p class="text-xs font-bold tracking-[0.35em] text-neon-blue">01 — WORKS</p>
+          <h2 class="mt-3 text-3xl font-black text-white sm:text-4xl">プロダクト・開発実績</h2>
+        </div>
+
+        <div class="grid gap-8 md:grid-cols-2">
+          <!-- Work 1 -->
+          <article class="reveal glow-border group overflow-hidden rounded-2xl bg-ink-900/80 transition duration-500 hover:-translate-y-1 hover:shadow-[0_20px_60px_-20px_rgba(232,121,249,.4)]">
+            <div class="relative bg-black">
+              <video class="lazy-video aspect-video w-full object-cover" src="love_sim.mp4" poster="assets/poster_love.jpg"
+                     muted loop playsinline controls preload="none"></video>
+            </div>
+            <div class="p-6 sm:p-7">
+              <div class="mb-3 flex flex-wrap gap-2">
+                <span class="rounded-full bg-neon-pink/10 px-2.5 py-0.5 text-[11px] font-medium text-neon-pink">AI会話</span>
+                <span class="rounded-full bg-neon-purple/10 px-2.5 py-0.5 text-[11px] font-medium text-neon-purple">インタラクティブ開発</span>
+              </div>
+              <h3 class="text-lg font-bold text-white sm:text-xl">トーク型恋愛シミュレーションアプリ</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-400">
+                LLMを活用したリアルタイム会話・感情変化アルゴリズムを実装したトーク型シミュレーションゲーム。
+              </p>
+            </div>
+          </article>
+
+          <!-- Work 2 -->
+          <article class="reveal glow-border group overflow-hidden rounded-2xl bg-ink-900/80 transition duration-500 hover:-translate-y-1 hover:shadow-[0_20px_60px_-20px_rgba(56,189,248,.4)]">
+            <div class="relative bg-black">
+              <video class="lazy-video aspect-video w-full object-cover" src="wallpaper.mp4" poster="assets/poster_wallpaper.jpg"
+                     muted loop playsinline controls preload="none"></video>
+            </div>
+            <div class="p-6 sm:p-7">
+              <div class="mb-3 flex flex-wrap gap-2">
+                <span class="rounded-full bg-neon-blue/10 px-2.5 py-0.5 text-[11px] font-medium text-neon-blue">デスクトップアプリ</span>
+                <span class="rounded-full bg-neon-cyan/10 px-2.5 py-0.5 text-[11px] font-medium text-neon-cyan">UI / UX</span>
+              </div>
+              <h3 class="text-lg font-bold text-white sm:text-xl">デスクトップ環境拡張・壁紙カスタマイズツール</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-400">
+                デスクトップ体験を向上させる機能拡張アプリケーション。
+              </p>
+            </div>
+          </article>
+
+          <!-- Work 3 -->
+          <article class="reveal glow-border relative overflow-hidden rounded-2xl bg-ink-900/80 p-6 transition duration-500 hover:-translate-y-1 sm:p-7">
+            <div class="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-neon-purple/20 blur-3xl"></div>
+            <div class="relative">
+              <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-neon-purple/30 to-neon-pink/20 ring-1 ring-white/10">
+                <svg class="h-6 w-6 text-neon-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z" />
+                </svg>
+              </div>
+              <div class="mb-3 flex flex-wrap gap-2">
+                <span class="rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] text-slate-300">画像生成AI</span>
+                <span class="rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] text-slate-300">ワークフロー自動化</span>
+              </div>
+              <h3 class="text-lg font-bold text-white sm:text-xl">AIクリエイターアカウント自動運用＆効率化システム</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-400">AI画像生成からSNS投稿までのワークフロー自動化。</p>
+              <div class="mt-6 flex items-center gap-2 text-[11px] text-slate-500">
+                <span class="rounded-md border border-white/10 px-2 py-1">生成</span><span class="text-neon-purple">→</span>
+                <span class="rounded-md border border-white/10 px-2 py-1">選別</span><span class="text-neon-purple">→</span>
+                <span class="rounded-md border border-white/10 px-2 py-1">投稿</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Work 4 -->
+          <article class="reveal glow-border relative overflow-hidden rounded-2xl bg-ink-900/80 p-6 transition duration-500 hover:-translate-y-1 sm:p-7">
+            <div class="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-neon-blue/20 blur-3xl"></div>
+            <div class="relative">
+              <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-neon-blue/30 to-neon-cyan/20 ring-1 ring-white/10">
+                <svg class="h-6 w-6 text-neon-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                </svg>
+              </div>
+              <div class="mb-3 flex flex-wrap gap-2">
+                <span class="rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] text-slate-300">X / note 連携</span>
+                <span class="rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] text-slate-300">匿名実績</span>
+              </div>
+              <h3 class="text-lg font-bold text-white sm:text-xl">SNS×Webコンテンツ自動生成パイプライン</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-400">特定テーマに特化したコンテンツ生成〜X/note自動連携システムの構築。</p>
+              <div class="mt-6 flex items-center gap-2 text-[11px] text-slate-500">
+                <span class="rounded-md border border-white/10 px-2 py-1">企画</span><span class="text-neon-blue">→</span>
+                <span class="rounded-md border border-white/10 px-2 py-1">LLM生成</span><span class="text-neon-blue">→</span>
+                <span class="rounded-md border border-white/10 px-2 py-1">自動配信</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 3. Services ===== -->
+    <section id="services" class="relative py-24 sm:py-32">
+      <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-neon-purple/40 to-transparent"></div>
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="reveal mb-14">
+          <p class="text-xs font-bold tracking-[0.35em] text-neon-purple">02 — SERVICES</p>
+          <h2 class="mt-3 text-3xl font-black text-white sm:text-4xl">提供可能サービス・対応スキル</h2>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="reveal glow-border rounded-2xl bg-ink-900/70 p-6 transition hover:bg-ink-800">
+            <p class="text-3xl font-black text-grad">01</p>
+            <h3 class="mt-4 font-bold text-white">LLM活用アプリ開発</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-400">会話AI・キャラクター・業務ツールなど、LLMを組み込んだWeb／デスクトップアプリを企画から実装まで。</p>
+          </div>
+          <div class="reveal glow-border rounded-2xl bg-ink-900/70 p-6 transition hover:bg-ink-800">
+            <p class="text-3xl font-black text-grad">02</p>
+            <h3 class="mt-4 font-bold text-white">プロンプトエンジニアリング</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-400">キャラクター設計・出力品質の安定化・評価まで、目的に合わせたプロンプト設計。</p>
+          </div>
+          <div class="reveal glow-border rounded-2xl bg-ink-900/70 p-6 transition hover:bg-ink-800">
+            <p class="text-3xl font-black text-grad">03</p>
+            <h3 class="mt-4 font-bold text-white">Claude Codeでの高速開発</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-400">AIエージェントを活用した短納期のプロトタイプ制作・機能追加・改修。</p>
+          </div>
+          <div class="reveal glow-border rounded-2xl bg-ink-900/70 p-6 transition hover:bg-ink-800">
+            <p class="text-3xl font-black text-grad">04</p>
+            <h3 class="mt-4 font-bold text-white">API連携・SNS自動化ツール</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-400">各種API連携、投稿スケジューリング、コンテンツ生成〜配信の自動化ツール作成。</p>
+          </div>
+        </div>
+
+        <div class="reveal mt-10 flex flex-wrap gap-2">
+          <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">Claude Code</span>
+          <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">Claude API</span>
+          <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">Python</span>
+          <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">JavaScript</span>
+          <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">HTML / CSS</span>
+          <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">PWA</span>
+          <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">画像生成AI</span>
+          <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">X API</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4. Contact ===== -->
+    <section id="contact" class="relative py-24 sm:py-32">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <div class="reveal glow-border relative overflow-hidden rounded-3xl bg-ink-900 px-6 py-14 text-center sm:px-12">
+          <div class="absolute left-1/2 top-0 -z-0 h-64 w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon-purple/25 blur-[100px]"></div>
+          <div class="relative">
+            <p class="text-xs font-bold tracking-[0.35em] text-neon-cyan">03 — CONTACT</p>
+            <h2 class="mt-4 text-3xl font-black text-white sm:text-4xl">お気軽にご相談ください</h2>
+            <p class="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400">
+              AIアプリの開発、SNS運用の自動化、インタラクティブな企画など、<br class="hidden sm:inline" />まずはアイデア段階からでもお話しできます。
+            </p>
+            <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <a href="https://x.com/mijukumononono" target="_blank" rel="noopener"
+                 class="flex w-full items-center justify-center gap-3 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-black transition hover:shadow-[0_0_35px_rgba(255,255,255,.35)] sm:w-auto">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                X（旧Twitter）でDM
+              </a>
+              <a href="https://coconala.com/users/6347683" target="_blank" rel="noopener"
+                 class="flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-neon-blue to-neon-purple px-7 py-3.5 text-sm font-bold text-white shadow-[0_0_30px_rgba(124,58,237,.45)] transition hover:shadow-[0_0_45px_rgba(56,189,248,.6)] sm:w-auto">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg>
+                ココナラで依頼する
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-white/5 py-8 text-center text-xs text-slate-600">
+    © <span id="year">2026</span> AI Creator / Developer Portfolio
+  </footer>
+
+  <script>
+    // Header background on scroll
+    const nav = document.getElementById('top-nav');
+    addEventListener('scroll', () => {
+      const s = scrollY > 20;
+      nav.classList.toggle('bg-ink-950/80', s);
+      nav.classList.toggle('backdrop-blur-md', s);
+      nav.classList.toggle('border-b', s);
+      nav.classList.toggle('border-white/5', s);
+    }, { passive: true });
+
+    // Reveal on scroll
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+    // Work videos: autoplay (muted) only while visible
+    const vio = new IntersectionObserver((entries) => {
+      entries.forEach(({ target: v, isIntersecting }) => {
+        if (isIntersecting) { if (v.preload === 'none') v.preload = 'auto'; if (!v.dataset.userPaused) v.play().catch(() => {}); }
+        else if (!v.paused) { v.dataset.autoPaused = '1'; v.pause(); }
+      });
+    }, { threshold: 0.4 });
+    document.querySelectorAll('.lazy-video').forEach((v) => {
+      vio.observe(v);
+      v.addEventListener('pause', () => { if (!v.dataset.autoPaused) v.dataset.userPaused = '1'; delete v.dataset.autoPaused; });
+      v.addEventListener('play', () => delete v.dataset.userPaused);
+    });
+
+    // Showreel sound toggle
+    const reel = document.getElementById('showreel');
+    const btn = document.getElementById('sound-toggle');
+    const label = document.getElementById('sound-label');
+    const bars = btn.querySelectorAll('.eq-bar');
+    btn.addEventListener('click', () => {
+      const on = reel.muted;
+      reel.muted = !on;
+      if (on) { reel.volume = 0.8; reel.play().catch(() => {}); }
+      btn.setAttribute('aria-pressed', String(on));
+      label.textContent = on ? 'サウンド OFF' : 'サウンド ON';
+      bars.forEach((b) => b.classList.toggle('animate-eq', on));
+    });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
