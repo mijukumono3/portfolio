@@ -33,11 +33,20 @@ export const emptyData = (): AppData => ({
 interface Backend {
   load(): Promise<unknown>;
   save(data: AppData): Promise<unknown>;
+  onChanged?(cb: (data: unknown) => void): () => void;
+}
+
+export interface AppBridge {
+  exportBackup(json: string, defaultName: string): Promise<{ ok: boolean; canceled?: boolean; path?: string }>;
+  importBackup(): Promise<{ ok: boolean; canceled?: boolean; text?: string }>;
+  toggleMini(): Promise<boolean>;
+  info(): Promise<{ shortcut: string; version: string }>;
 }
 
 declare global {
   interface Window {
     lolStore?: Backend;
+    lolApp?: AppBridge;
   }
 }
 
@@ -69,6 +78,7 @@ interface Store {
   data: AppData;
   loaded: boolean;
   update: (fn: (d: AppData) => AppData) => void;
+  replaceAll: (d: AppData) => void;
 }
 
 const StoreContext = createContext<Store | null>(null);
@@ -77,24 +87,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(emptyData);
   const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef<number>();
+  // 他ウィンドウから受け取った内容は保存し直さない（ウィンドウ間で保存が往復しないように）
+  const remoteJson = useRef<string | null>(null);
+  const normalize = (raw: unknown): AppData => ({ ...emptyData(), ...(raw as Partial<AppData>), version: 1 });
 
   useEffect(() => {
     backend()
       .load()
       .then((raw) => {
-        if (raw && typeof raw === 'object') setData({ ...emptyData(), ...(raw as Partial<AppData>), version: 1 });
+        if (raw && typeof raw === 'object') {
+          const d = normalize(raw);
+          remoteJson.current = JSON.stringify(d);
+          setData(d);
+        }
       })
       .finally(() => setLoaded(true));
+    return backend().onChanged?.((raw) => {
+      if (!raw || typeof raw !== 'object') return;
+      const d = normalize(raw);
+      remoteJson.current = JSON.stringify(d);
+      window.clearTimeout(saveTimer.current);
+      setData(d);
+    });
   }, []);
 
   useEffect(() => {
     if (!loaded) return;
+    if (remoteJson.current === JSON.stringify(data)) return;
+    remoteJson.current = null;
     window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => void backend().save(data), 300);
+    saveTimer.current = window.setTimeout(() => void backend().save(data), 250);
   }, [data, loaded]);
 
   const update = useCallback((fn: (d: AppData) => AppData) => setData((d) => fn(d)), []);
-  return <StoreContext.Provider value={{ data, loaded, update }}>{children}</StoreContext.Provider>;
+  const replaceAll = useCallback((d: AppData) => setData(d), []);
+  return <StoreContext.Provider value={{ data, loaded, update, replaceAll }}>{children}</StoreContext.Provider>;
 }
 
 export function useStore(): Store {

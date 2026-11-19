@@ -1,5 +1,6 @@
-import { useState } from 'react';
 import { Icon, PageHeader, Panel } from '../components/ui';
+import { ChampionInput } from '../components/ChampionInput';
+import { setMatchupState, useMatchupState, type MatchupSlot } from '../matchupState';
 import {
   ADC_LABEL,
   evaluateMatchup,
@@ -15,43 +16,46 @@ import {
   type TopType,
 } from '../core/matchup';
 
-const LANE_LABEL: Record<Lane, string> = { top: 'トップ', mid: 'ミッド', bot: 'ボット' };
+export const LANE_LABEL: Record<Lane, string> = { top: 'トップ', mid: 'ミッド', bot: 'ボット' };
 const MARKER_POS: Record<Lane, { left: string; top: string }> = {
   top: { left: '13%', top: '13%' },
   mid: { left: '50%', top: '50%' },
   bot: { left: '87%', top: '87%' },
 };
 
-function Select<T extends string>({
+export function Select<T extends string>({
   label,
   side,
+  slot,
   value,
   options,
   onChange,
 }: {
   label: string;
   side?: 'ally' | 'enemy';
+  slot?: MatchupSlot;
   value: T;
   options: Record<T, string>;
   onChange: (v: T) => void;
 }) {
   return (
-    <label className={`field ${side ?? ''}`}>
+    <div className={`field ${side ?? ''}`}>
       <span>
         {side && <span className={`chip ${side === 'ally' ? 'chip-ally' : 'chip-enemy'}`}>{side === 'ally' ? '味方' : '敵'}</span>} {label}
       </span>
-      <select value={value} onChange={(e) => onChange(e.target.value as T)}>
+      {slot && <ChampionInput slot={slot} />}
+      <select aria-label={`${side === 'ally' ? '味方' : side === 'enemy' ? '敵' : ''}${label}のタイプ`} value={value} onChange={(e) => onChange(e.target.value as T)}>
         {(Object.keys(options) as T[]).map((k) => (
           <option key={k} value={k}>
             {options[k]}
           </option>
         ))}
       </select>
-    </label>
+    </div>
   );
 }
 
-function Minimap({ priority, levels }: { priority: Lane[]; levels: Record<Lane, number> }) {
+export function Minimap({ priority, levels }: { priority: Lane[]; levels: Record<Lane, number> }) {
   return (
     <div className="minimap" role="img" aria-label={`ガンク優先順位：${priority.map((l) => LANE_LABEL[l]).join('、')}`}>
       <svg viewBox="0 0 100 100" aria-hidden>
@@ -75,14 +79,9 @@ function Minimap({ priority, levels }: { priority: Lane[]; levels: Record<Lane, 
 }
 
 export function MatchupPage() {
-  const [input, setInput] = useState<MatchupInput>({
-    level6: false,
-    top: { ally: 'tank', enemy: 'tank' },
-    mid: { ally: 'rangedFarm', enemy: 'rangedFarm' },
-    bot: { adc: 'bully', support: 'cc' },
-  });
+  const { input } = useMatchupState();
   const result = evaluateMatchup(input);
-  const set = (fn: (i: MatchupInput) => MatchupInput) => setInput((i) => fn(i));
+  const set = (fn: (i: MatchupInput) => MatchupInput) => setMatchupState((s) => ({ ...s, input: fn(s.input) }));
   const levels = { top: result.lanes.top.level, mid: result.lanes.mid.level, bot: result.lanes.bot.level };
 
   return (
@@ -106,15 +105,15 @@ export function MatchupPage() {
           <div className="lane-block">
             <h3>トップ</h3>
             <div className="lane-input">
-              <Select<TopType> label="" side="ally" value={input.top.ally} options={TOP_LABEL} onChange={(v) => set((i) => ({ ...i, top: { ...i.top, ally: v } }))} />
-              <Select<TopType> label="" side="enemy" value={input.top.enemy} options={TOP_LABEL} onChange={(v) => set((i) => ({ ...i, top: { ...i.top, enemy: v } }))} />
+              <Select<TopType> label="" slot="topAlly" side="ally" value={input.top.ally} options={TOP_LABEL} onChange={(v) => set((i) => ({ ...i, top: { ...i.top, ally: v } }))} />
+              <Select<TopType> label="" slot="topEnemy" side="enemy" value={input.top.enemy} options={TOP_LABEL} onChange={(v) => set((i) => ({ ...i, top: { ...i.top, enemy: v } }))} />
             </div>
           </div>
           <div className="lane-block">
             <h3>ミッド</h3>
             <div className="lane-input">
-              <Select<MidType> label="" side="ally" value={input.mid.ally} options={MID_LABEL} onChange={(v) => set((i) => ({ ...i, mid: { ...i.mid, ally: v } }))} />
-              <Select<MidType> label="" side="enemy" value={input.mid.enemy} options={MID_LABEL} onChange={(v) => set((i) => ({ ...i, mid: { ...i.mid, enemy: v } }))} />
+              <Select<MidType> label="" slot="midAlly" side="ally" value={input.mid.ally} options={MID_LABEL} onChange={(v) => set((i) => ({ ...i, mid: { ...i.mid, ally: v } }))} />
+              <Select<MidType> label="" slot="midEnemy" side="enemy" value={input.mid.enemy} options={MID_LABEL} onChange={(v) => set((i) => ({ ...i, mid: { ...i.mid, enemy: v } }))} />
             </div>
           </div>
           <div className="lane-block">
@@ -123,8 +122,8 @@ export function MatchupPage() {
               <span className="small muted">サポート70% : ADC30%</span>
             </h3>
             <div className="lane-input">
-              <Select<AdcType> label="ADC" value={input.bot.adc} options={ADC_LABEL} onChange={(v) => set((i) => ({ ...i, bot: { ...i.bot, adc: v } }))} />
-              <Select<SupportType> label="サポート" value={input.bot.support} options={SUPPORT_LABEL} onChange={(v) => set((i) => ({ ...i, bot: { ...i.bot, support: v } }))} />
+              <Select<AdcType> label="ADC" slot="adc" value={input.bot.adc} options={ADC_LABEL} onChange={(v) => set((i) => ({ ...i, bot: { ...i.bot, adc: v } }))} />
+              <Select<SupportType> label="サポート" slot="support" value={input.bot.support} options={SUPPORT_LABEL} onChange={(v) => set((i) => ({ ...i, bot: { ...i.bot, support: v } }))} />
             </div>
           </div>
         </Panel>

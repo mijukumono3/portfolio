@@ -5,6 +5,8 @@ import { DrillPage } from './pages/DrillPage';
 import { WorkbookPage } from './pages/WorkbookPage';
 import { MatchupPage } from './pages/MatchupPage';
 import { SessionPage } from './pages/SessionPage';
+import { ChampionsPage } from './pages/ChampionsPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { todayKey, useStore } from './store';
 import type { Subject } from './core/progress';
 import { evaluateSession } from './core/session';
@@ -13,7 +15,9 @@ import { Icon, type IconName } from './components/ui';
 export type Route =
   | { page: 'home' }
   | { page: 'reader'; sectionId?: string }
-  | { page: 'drill'; subject?: Subject | 'review' }
+  | { page: 'drill'; subject?: Subject | 'review'; ids?: string[] }
+  | { page: 'champions' }
+  | { page: 'settings' }
   | { page: 'workbook' }
   | { page: 'matchup' }
   | { page: 'session' };
@@ -34,6 +38,7 @@ const NAV: { group: string; items: { page: Route['page']; label: string; icon: I
     group: 'KNOWLEDGE',
     items: [
       { page: 'matchup', label: 'ガンク判定', icon: 'map' },
+      { page: 'champions', label: 'チャンピオン', icon: 'search' },
       { page: 'reader', label: '教科書', icon: 'book' },
     ],
   },
@@ -75,6 +80,18 @@ export function App() {
             ))}
           </div>
         ))}
+        <div style={{ marginTop: 'auto' }} />
+        {window.lolApp && (
+          <button className="nav-item" onClick={() => window.lolApp?.toggleMini()} title="常に最前面の小さなウィンドウ（Ctrl+Shift+L）">
+            <Icon name="timer" />
+            ミニ表示
+            <span className="nav-badge">Ctrl+Shift+L</span>
+          </button>
+        )}
+        <button className={`nav-item ${route.page === 'settings' ? 'active' : ''}`} onClick={() => navigate({ page: 'settings' })}>
+          <Icon name="spark" />
+          設定・バックアップ
+        </button>
         <button className="sidebar-foot" style={{ textAlign: 'left' }} onClick={() => navigate({ page: 'session' })}>
           <div className="small muted">今日のランク戦</div>
           <div style={{ fontWeight: 700 }}>
@@ -99,11 +116,15 @@ export function App() {
         ) : route.page === 'reader' ? (
           <ReaderPage key={route.sectionId ?? 'toc'} initialSectionId={route.sectionId} />
         ) : route.page === 'drill' ? (
-          <DrillPage key={route.subject ?? 'all'} initialSubject={route.subject} navigate={navigate} />
+          <DrillPage key={route.ids ? `ids-${route.ids.join()}` : route.subject ?? 'all'} initialSubject={route.subject} fixedIds={route.ids} navigate={navigate} />
         ) : route.page === 'workbook' ? (
           <WorkbookPage navigate={navigate} />
         ) : route.page === 'matchup' ? (
           <MatchupPage />
+        ) : route.page === 'champions' ? (
+          <ChampionsPage navigate={navigate} />
+        ) : route.page === 'settings' ? (
+          <SettingsPage />
         ) : (
           <SessionPage />
         )}

@@ -1,8 +1,9 @@
 import type { Navigate } from '../App';
 import { Icon, Panel, ProgressRing, type IconName } from '../components/ui';
-import { quiz, sections, workbookQuestions } from '../content';
+import { getSection, quiz, sections, workbookQuestions } from '../content';
+import { buildDailyPlan } from '../core/daily';
 import { computeSubjectScores, recommendSubject, SUBJECTS, SUBJECT_LABEL } from '../core/progress';
-import { useStore } from '../store';
+import { todayKey, useStore } from '../store';
 
 function StatTile({ icon, label, value, sub }: { icon: IconName; label: string; value: string; sub: string }) {
   return (
@@ -30,6 +31,10 @@ export function HomePage({ navigate }: { navigate: Navigate }) {
   const readPct = Math.round((data.read.length / sections.length) * 100);
   const answered = new Set(data.answers.map((a) => a.questionId)).size;
   const wbDone = Object.values(data.workbook).filter((w) => w.rating === 'good').length;
+  const plan = buildDailyPlan(todayKey(), quiz, data.answers, data.read);
+  const planSection = plan?.sectionId ? getSection(plan.sectionId) : undefined;
+  const sectionDone = plan?.sectionId ? data.read.includes(plan.sectionId) : false;
+  const planDone = plan ? plan.doneIds.length + (sectionDone ? 1 : 0) : 0;
 
   return (
     <div className="stack">
@@ -57,6 +62,52 @@ export function HomePage({ navigate }: { navigate: Navigate }) {
           <div className="small muted">/ 700</div>
         </div>
       </section>
+
+      {plan && (
+        <Panel
+          className="daily"
+          title="今日の課題"
+          icon="flame"
+          action={
+            <span className={`chip ${planDone === plan.questionIds.length + 1 ? 'chip-gold' : ''} num`}>
+              {planDone === plan.questionIds.length + 1 ? '達成！' : `${planDone} / ${plan.questionIds.length + 1}`}
+            </span>
+          }
+        >
+          <p className="small muted" style={{ marginBottom: 10 }}>
+            いちばん伸ばしたい科目 <strong style={{ color: 'var(--gold-2)' }}>{SUBJECT_LABEL[plan.subject]}</strong> から3問と、関連する教科書1章。毎日ここから始めましょう。
+          </p>
+          <div className="daily-steps">
+            {plan.questionIds.map((id, i) => {
+              const done = plan.doneIds.includes(id);
+              return (
+                <button key={id} className={`daily-step ${done ? 'done' : ''}`} onClick={() => navigate({ page: 'drill', ids: plan.questionIds })}>
+                  <span className="tick">{done ? '✓' : i + 1}</span>
+                  ドリル {i + 1}問目
+                </button>
+              );
+            })}
+            {planSection && (
+              <button className={`daily-step ${sectionDone ? 'done' : ''}`} onClick={() => navigate({ page: 'reader', sectionId: planSection.id })} title={planSection.title}>
+                <span className="tick">{sectionDone ? '✓' : <Icon name="book" size={12} />}</span>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{planSection.title}</span>
+              </button>
+            )}
+          </div>
+          <div className="row">
+            <button className="btn btn-primary" onClick={() => navigate({ page: 'drill', ids: plan.questionIds })}>
+              <Icon name="target" />
+              今日の3問を解く
+            </button>
+            {planSection && (
+              <button className="btn" onClick={() => navigate({ page: 'reader', sectionId: planSection.id })}>
+                <Icon name="book" />
+                関連する章を読む
+              </button>
+            )}
+          </div>
+        </Panel>
+      )}
 
       <div className="grid grid-4">
         <StatTile

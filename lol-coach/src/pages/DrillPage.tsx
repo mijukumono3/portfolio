@@ -5,14 +5,23 @@ import { getSection, quiz } from '../content';
 import { buildReviewQueue, computeSubjectScores, SUBJECTS, SUBJECT_LABEL, type Subject } from '../core/progress';
 import { useStore } from '../store';
 
-type Filter = Subject | 'all' | 'review';
+type Filter = Subject | 'all' | 'review' | 'today';
 
-export function DrillPage({ initialSubject, navigate }: { initialSubject?: Subject | 'review'; navigate: Navigate }) {
+export function DrillPage({
+  initialSubject,
+  fixedIds,
+  navigate,
+}: {
+  initialSubject?: Subject | 'review';
+  fixedIds?: string[];
+  navigate: Navigate;
+}) {
   const { data, update } = useStore();
-  const [filter, setFilter] = useState<Filter>(initialSubject ?? 'all');
+  const [filter, setFilter] = useState<Filter>(fixedIds ? 'today' : initialSubject ?? 'all');
   const [round, setRound] = useState(0);
   // 出題順はセット開始時点の履歴で固定する（回答のたびに並び替わらないように）
   const queue = useMemo(() => {
+    if (filter === 'today') return (fixedIds ?? []).filter((id) => quiz.some((q) => q.id === id));
     const pool = filter === 'all' || filter === 'review' ? quiz : quiz.filter((q) => q.subject === filter);
     const ordered = buildReviewQueue(
       pool.map((q) => q.id),
@@ -69,6 +78,7 @@ export function DrillPage({ initialSubject, navigate }: { initialSubject?: Subje
     { key: 'all', label: '全科目' },
     ...SUBJECTS.map((s) => ({ key: s as Filter, label: SUBJECT_LABEL[s], score: scores[s].score })),
     { key: 'review', label: `復習 ${wrongCount}` },
+    ...(fixedIds ? [{ key: 'today' as Filter, label: '今日の課題' }] : []),
   ];
 
   return (
