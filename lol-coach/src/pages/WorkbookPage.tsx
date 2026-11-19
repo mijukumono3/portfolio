@@ -22,7 +22,7 @@ export function WorkbookPage({ navigate }: { navigate: Navigate }) {
   const save = (patch: { text?: string; rating?: SelfRating }) =>
     update((d) => ({
       ...d,
-      workbook: { ...d.workbook, [currentId]: { text: '', ...d.workbook[currentId], ...patch, updatedAt: Date.now() } },
+      workbook: { ...d.workbook, [currentId]: { ...(d.workbook[currentId] ?? { text: '' }), ...patch, updatedAt: Date.now() } },
     }));
 
   return (
