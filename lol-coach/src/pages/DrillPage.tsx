@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Navigate } from '../App';
 import { Icon, PageHeader } from '../components/ui';
-import { getSection, quiz } from '../content';
+import { allQuestions as quiz, getSection } from '../content';
 import { buildReviewQueue, computeSubjectScores, SUBJECTS, SUBJECT_LABEL, type Subject } from '../core/progress';
 import { useStore } from '../store';
 
@@ -10,10 +10,12 @@ type Filter = Subject | 'all' | 'review' | 'today';
 export function DrillPage({
   initialSubject,
   fixedIds,
+  fixedLabel = '今日の課題',
   navigate,
 }: {
   initialSubject?: Subject | 'review';
   fixedIds?: string[];
+  fixedLabel?: string;
   navigate: Navigate;
 }) {
   const { data, update } = useStore();
@@ -78,7 +80,7 @@ export function DrillPage({
     { key: 'all', label: '全科目' },
     ...SUBJECTS.map((s) => ({ key: s as Filter, label: SUBJECT_LABEL[s], score: scores[s].score })),
     { key: 'review', label: `復習 ${wrongCount}` },
-    ...(fixedIds ? [{ key: 'today' as Filter, label: '今日の課題' }] : []),
+    ...(fixedIds ? [{ key: 'today' as Filter, label: fixedLabel }] : []),
   ];
 
   return (

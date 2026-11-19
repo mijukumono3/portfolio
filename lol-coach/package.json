@@ -1,7 +1,7 @@
 {
   "name": "lol-coach",
   "productName": "LoL Coach",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "LOLの教科書で学ぶ初心者向け上達アプリ",
   "main": "electron/main.cjs",
   "private": true,

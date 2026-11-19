@@ -1,6 +1,6 @@
 import type { Navigate } from '../App';
 import { Icon, Panel, ProgressRing, type IconName } from '../components/ui';
-import { getSection, quiz, sections, workbookQuestions } from '../content';
+import { allQuestions as quiz, getSection, sections, workbookQuestions } from '../content';
 import { buildDailyPlan } from '../core/daily';
 import { computeSubjectScores, recommendSubject, SUBJECTS, SUBJECT_LABEL } from '../core/progress';
 import { todayKey, useStore } from '../store';

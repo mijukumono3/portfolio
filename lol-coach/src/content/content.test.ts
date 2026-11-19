@@ -55,3 +55,28 @@ describe('チェックリストの参照章', () => {
     expect(getSection(ref)).toBeDefined();
   });
 });
+
+import { allQuestions, routes, routeScenarios } from './index';
+
+describe('ジャングルルート練習データ', () => {
+  it('ルートIDが一意で参照章が実在し、キャンプがある', () => {
+    expect(new Set(routes.map((r) => r.id)).size).toBe(routes.length);
+    for (const r of routes) {
+      expect(getSection(r.ref), r.id).toBeDefined();
+      expect(r.camps.length, r.id).toBeGreaterThan(0);
+    }
+  });
+  it('シナリオは形式が正しく、ルートIDが実在する', () => {
+    for (const q of routeScenarios) {
+      expect(q.subject).toBe('jungle');
+      expect(q.choices).toHaveLength(4);
+      expect(q.answer).toBeGreaterThanOrEqual(0);
+      expect(q.answer).toBeLessThan(4);
+      expect(getSection(q.ref), q.id).toBeDefined();
+      if (q.routeId) expect(routes.some((r) => r.id === q.routeId), q.id).toBe(true);
+    }
+  });
+  it('全問題でIDが重複しない', () => {
+    expect(new Set(allQuestions.map((q) => q.id)).size).toBe(allQuestions.length);
+  });
+});

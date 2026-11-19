@@ -7,6 +7,8 @@ import { MatchupPage } from './pages/MatchupPage';
 import { SessionPage } from './pages/SessionPage';
 import { ChampionsPage } from './pages/ChampionsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { RoutesPage } from './pages/RoutesPage';
+import { ReplayPage } from './pages/ReplayPage';
 import { todayKey, useStore } from './store';
 import type { Subject } from './core/progress';
 import { evaluateSession } from './core/session';
@@ -15,7 +17,9 @@ import { Icon, type IconName } from './components/ui';
 export type Route =
   | { page: 'home' }
   | { page: 'reader'; sectionId?: string }
-  | { page: 'drill'; subject?: Subject | 'review'; ids?: string[] }
+  | { page: 'drill'; subject?: Subject | 'review'; ids?: string[]; label?: string }
+  | { page: 'routes' }
+  | { page: 'replays' }
   | { page: 'champions' }
   | { page: 'settings' }
   | { page: 'workbook' }
@@ -32,6 +36,8 @@ const NAV: { group: string; items: { page: Route['page']; label: string; icon: I
       { page: 'session', label: '3戦セット', icon: 'swords' },
       { page: 'drill', label: '判断力ドリル', icon: 'target' },
       { page: 'workbook', label: 'ワークブック', icon: 'pen' },
+      { page: 'routes', label: 'ルート練習', icon: 'route' },
+      { page: 'replays', label: 'リプレイ分析', icon: 'play' },
     ],
   },
   {
@@ -116,13 +122,17 @@ export function App() {
         ) : route.page === 'reader' ? (
           <ReaderPage key={route.sectionId ?? 'toc'} initialSectionId={route.sectionId} />
         ) : route.page === 'drill' ? (
-          <DrillPage key={route.ids ? `ids-${route.ids.join()}` : route.subject ?? 'all'} initialSubject={route.subject} fixedIds={route.ids} navigate={navigate} />
+          <DrillPage key={route.ids ? `ids-${route.ids.join()}` : route.subject ?? 'all'} initialSubject={route.subject} fixedIds={route.ids} fixedLabel={route.label} navigate={navigate} />
         ) : route.page === 'workbook' ? (
           <WorkbookPage navigate={navigate} />
         ) : route.page === 'matchup' ? (
           <MatchupPage />
         ) : route.page === 'champions' ? (
           <ChampionsPage navigate={navigate} />
+        ) : route.page === 'routes' ? (
+          <RoutesPage navigate={navigate} />
+        ) : route.page === 'replays' ? (
+          <ReplayPage />
         ) : route.page === 'settings' ? (
           <SettingsPage />
         ) : (

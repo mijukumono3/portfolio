@@ -15,4 +15,13 @@ contextBridge.exposeInMainWorld('lolApp', {
   importBackup: () => ipcRenderer.invoke('backup:import'),
   toggleMini: () => ipcRenderer.invoke('mini:toggle'),
   info: () => ipcRenderer.invoke('app:info'),
+  importDocx: () => ipcRenderer.invoke('images:import'),
+  saveImageMap: (map) => ipcRenderer.invoke('images:saveMap', map),
+  imageMap: () => ipcRenderer.invoke('images:map'),
+  clearImages: () => ipcRenderer.invoke('images:clear'),
+  onImagesChanged: (cb) => {
+    const listener = () => cb();
+    ipcRenderer.on('images:changed', listener);
+    return () => ipcRenderer.removeListener('images:changed', listener);
+  },
 });

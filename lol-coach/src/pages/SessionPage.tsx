@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Icon, PageHeader, Panel } from '../components/ui';
 import { BASE_SET, evaluateSession, type GameResult } from '../core/session';
+import { CHECKLIST, checklistStats } from '../core/checklist';
 import { todayKey, useStore, type DaySession } from '../store';
 
 const REST = 120;
@@ -106,8 +107,17 @@ export function SessionPage() {
       return { ...d, sessions: [...d.sessions.filter((s) => s.date !== date), fn(cur)] };
     });
   const record = (r: GameResult) => saveToday((s) => ({ ...s, results: [...s.results, r], notes: [...s.notes, ''] }));
-  const undo = () => saveToday((s) => ({ ...s, results: s.results.slice(0, -1), notes: s.notes.slice(0, -1) }));
+  const undo = () =>
+    saveToday((s) => ({ ...s, results: s.results.slice(0, -1), notes: s.notes.slice(0, -1), checks: s.checks?.slice(0, s.results.length - 1) }));
   const setNote = (i: number, text: string) => saveToday((s) => ({ ...s, notes: s.notes.map((n, j) => (j === i ? text : n)) }));
+  const toggleCheck = (i: number, id: string) =>
+    saveToday((s) => {
+      const checks = Array.from({ length: s.results.length }, (_, j) => s.checks?.[j] ?? null);
+      const cur = checks[i] ?? [];
+      checks[i] = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
+      return { ...s, checks };
+    });
+  const stats = checklistStats(data.sessions);
   const addInsight = () => {
     const text = insight.trim();
     if (!text) return;
@@ -162,25 +172,85 @@ export function SessionPage() {
       </div>
 
       {today.results.length > 0 && (
-        <Panel title="試合ごとの振り返り" icon="pen" action={<span className="small muted">自動保存</span>}>
-          <div className="stack-sm">
-            {today.results.map((r, i) => (
-              <div key={i} className="note-row">
-                <div className={`pip ${r}`}>
-                  <b>{r}</b>
-                  <span>{i + 1}戦目</span>
+        <Panel title="試合ごとの振り返り" icon="pen" action={<span className="small muted">できたことにチェック・自動保存</span>}>
+          <div className="stack">
+            {today.results.map((r, i) => {
+              const checked = today.checks?.[i] ?? [];
+              return (
+                <div key={i} className="note-row">
+                  <div className={`pip ${r}`}>
+                    <b>{r}</b>
+                    <span>{i + 1}戦目</span>
+                  </div>
+                  <div className="stack-sm">
+                    <div className="checklist" role="group" aria-label={`${i + 1}戦目のチェックリスト`}>
+                      {CHECKLIST.map((c) => {
+                        const on = checked.includes(c.id);
+                        return (
+                          <button key={c.id} className={`check ${on ? 'on' : ''}`} aria-pressed={on} title={c.hint} onClick={() => toggleCheck(i, c.id)}>
+                            <span className="box">{on ? '✓' : ''}</span>
+                            {c.text}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <textarea
+                      aria-label={`${i + 1}戦目の振り返り`}
+                      placeholder="ひとことメモ（例：3:30にボットへ行けた／視界なしでドラゴンに触った）"
+                      value={today.notes[i] ?? ''}
+                      onChange={(e) => setNote(i, e.target.value)}
+                    />
+                  </div>
                 </div>
-                <textarea
-                  aria-label={`${i + 1}戦目の振り返り`}
-                  placeholder="良かった判断・悪かった判断を一言で（例：3:30にボットへ行けた／視界なしでドラゴンに触った）"
-                  value={today.notes[i] ?? ''}
-                  onChange={(e) => setNote(i, e.target.value)}
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Panel>
       )}
+
+      <Panel title="振り返りの傾向" icon="spark" action={<span className="small muted num">チェックした {stats.games} 試合から集計</span>}>
+        {stats.games === 0 ? (
+          <p className="small muted">試合後にチェックリストを付けると、苦手な習慣と「勝敗を分けている習慣」がここに出ます。</p>
+        ) : (
+          <div className="grid grid-2">
+            <div>
+              <h3 style={{ marginBottom: 10 }}>習慣ごとの達成率</h3>
+              <div className="stack-sm">
+                {stats.items.map((it) => (
+                  <div key={it.id} className="habit-row" title={`勝ち試合 ${it.winRate ?? '—'}% / 負け試合 ${it.lossRate ?? '—'}%`}>
+                    <span className="small">{it.text}</span>
+                    <div className="bar">
+                      <span style={{ width: `${it.rate}%` }} />
+                    </div>
+                    <span className="small num" style={{ textAlign: 'right' }}>
+                      {it.rate}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="stack-sm">
+              <h3>勝敗を分けている習慣</h3>
+              {stats.keyHabits.length ? (
+                stats.keyHabits.slice(0, 3).map((it) => (
+                  <div key={it.id} className="explain" style={{ marginTop: 0 }}>
+                    <strong>{it.text}</strong>
+                    <div className="small muted num">
+                      勝ち試合で {it.winRate}% ／ 負け試合で {it.lossRate}%（差 {it.gap}pt）
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="small muted">勝ち試合と負け試合の両方をチェックすると表示されます。</p>
+              )}
+              <h3 style={{ marginTop: 6 }}>いちばん苦手な習慣</h3>
+              <p className="small">
+                <strong style={{ color: 'var(--gold-2)' }}>{stats.weakest[0].text}</strong>（達成率 {stats.weakest[0].rate}%）
+              </p>
+            </div>
+          </div>
+        )}
+      </Panel>
 
       <div className="grid grid-2">
         <Panel title="「悟り」ノート" icon="flame" action={<span className="chip chip-gold num">今日 {todayInsights} / 9 行</span>}>

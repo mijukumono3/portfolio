@@ -2,6 +2,7 @@ import textbookData from './textbook.json';
 import workbookQuestionsData from './workbook-questions.json';
 import workbookAnswersData from './workbook-answers.json';
 import quizData from './quiz.json';
+import routesData from './routes.json';
 import type { Section } from '../core/search';
 import type { Subject } from '../core/progress';
 
@@ -35,3 +36,20 @@ export const workbookAnswers = workbookAnswersData as Record<string, WorkbookAns
 
 const sectionIndex = new Map(sections.map((s) => [s.id, s]));
 export const getSection = (id: string) => sectionIndex.get(id);
+
+export interface JungleRoute {
+  id: string;
+  name: string;
+  camps: string[];
+  goal: 'bot' | 'mid' | 'top' | 'flex';
+  level?: string;
+  when: string;
+  ref: string;
+}
+
+export type RouteScenario = QuizQuestion & { routeId?: string };
+
+export const routes = routesData.routes as JungleRoute[];
+export const routeScenarios = routesData.scenarios as RouteScenario[];
+/** 点数・ドリル・今日の課題で使う全問題（4択クイズ + ルート練習） */
+export const allQuestions: QuizQuestion[] = [...quiz, ...routeScenarios];

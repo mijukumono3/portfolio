@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon, PageHeader, Panel } from '../components/ui';
 import { parseBackup, serializeBackup } from '../core/backup';
 import { todayKey, useStore, type AppData } from '../store';
+import { mapDocxImages } from '../core/docxImages';
+import { sections } from '../content';
+import { useImageMap } from '../imageMap';
 
 function summary(d: AppData) {
   const games = d.sessions.reduce((n, s) => n + s.results.length, 0);
@@ -14,6 +17,33 @@ export function SettingsPage() {
   const [shortcut, setShortcut] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const isApp = Boolean(window.lolApp);
+  const imageMap = useImageMap();
+  const [importing, setImporting] = useState(false);
+  const imageCount = imageMap ? Object.values(imageMap).reduce((n, v) => n + v.length, 0) : 0;
+
+  const doImportImages = async () => {
+    if (!window.lolApp) return;
+    setImporting(true);
+    try {
+      const r = await window.lolApp.importDocx();
+      if (!r.ok) {
+        if (!r.canceled) setMessage({ kind: 'error', text: r.error ?? '取り込みに失敗しました。' });
+        return;
+      }
+      const map = mapDocxImages(r.documentXml ?? '', r.relsXml ?? '', sections);
+      await window.lolApp.saveImageMap(map);
+      const placed = Object.values(map).reduce((n, v) => n + v.length, 0);
+      setMessage({ kind: 'ok', text: `図版を取り込みました：${placed}枚を${Object.keys(map).length}章に配置（ファイル内の画像 ${r.count}枚）` });
+    } finally {
+      setImporting(false);
+    }
+  };
+  const clearImages = async () => {
+    if (window.confirm('取り込んだ図版をすべて削除しますか？（記録は消えません）')) {
+      await window.lolApp?.clearImages();
+      setMessage({ kind: 'ok', text: '図版を削除しました。' });
+    }
+  };
 
   useEffect(() => {
     window.lolApp?.info().then((i) => setShortcut(i.shortcut.replace('CommandOrControl', 'Ctrl')));
@@ -99,6 +129,35 @@ export function SettingsPage() {
           <p className="small muted" style={{ marginTop: 12 }}>
             復元すると現在の記録は置き換わります（実行前に確認が出ます）。
           </p>
+        </Panel>
+
+        <Panel title="教科書の図版" icon="image">
+          <p className="small muted" style={{ marginBottom: 14 }}>
+            元の「LOLの教科書.docx」を選ぶと、中の図（ワード位置のマップなど）を取り出し、教科書の該当する章に表示します。ファイルはこのPCの中だけで処理されます。
+          </p>
+          {isApp ? (
+            <>
+              <div className="q-body small" style={{ marginBottom: 14 }}>
+                {imageCount ? `取り込み済み：${imageCount}枚（${Object.keys(imageMap ?? {}).length}章）` : 'まだ取り込んでいません'}
+              </div>
+              <div className="row">
+                <button className="btn btn-primary" disabled={importing} onClick={doImportImages}>
+                  <Icon name="image" />
+                  {importing ? '取り込み中…' : imageCount ? '取り込み直す' : '.docx から図版を取り込む'}
+                </button>
+                {imageCount > 0 && (
+                  <button className="btn btn-ghost" onClick={clearImages}>
+                    図版を削除
+                  </button>
+                )}
+              </div>
+              <p className="small muted" style={{ marginTop: 12 }}>
+                図は「見出しの直後に出てくる画像」をその章に割り当てます。章の境目では前後にずれることがあります。
+              </p>
+            </>
+          ) : (
+            <p className="small muted">デスクトップアプリ版でのみ使えます。</p>
+          )}
         </Panel>
 
         <Panel title="ミニウィンドウ" icon="timer">

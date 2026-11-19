@@ -56,9 +56,11 @@ export interface AppBridge {
   exportBackup(json: string, defaultName: string): Promise<{ ok: boolean; canceled?: boolean; path?: string }>;
   importBackup(): Promise<{ ok: boolean; canceled?: boolean; text?: string }>;
   toggleMini(): Promise<boolean>;
-  importDocxImages(): Promise<{ ok: boolean; canceled?: boolean; count?: number; sections?: number; error?: string }>;
+  importDocx(): Promise<{ ok: boolean; canceled?: boolean; count?: number; error?: string; documentXml?: string; relsXml?: string }>;
+  saveImageMap(map: Record<string, string[]>): Promise<boolean>;
   imageMap(): Promise<Record<string, string[]> | null>;
   clearImages(): Promise<boolean>;
+  onImagesChanged(cb: () => void): () => void;
   info(): Promise<{ shortcut: string; version: string }>;
 }
 

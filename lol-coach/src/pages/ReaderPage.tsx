@@ -3,6 +3,7 @@ import { Icon } from '../components/ui';
 import { sections } from '../content';
 import { searchSections, type Section } from '../core/search';
 import { useStore } from '../store';
+import { imageUrl, useImageMap } from '../imageMap';
 
 function Highlight({ text, query }: { text: string; query: string }) {
   const q = query.trim();
@@ -44,6 +45,9 @@ export function ReaderPage({ initialSectionId }: { initialSectionId?: string }) 
   const isRead = data.read.includes(currentId);
   const isBookmarked = data.bookmarks.includes(currentId);
   const readPct = Math.round((data.read.length / sections.length) * 100);
+  const imageMap = useImageMap();
+  const figures = imageMap?.[currentId] ?? [];
+  const [zoom, setZoom] = useState<string | null>(null);
 
   const go = (id: string) => {
     setCurrentId(id);
@@ -69,7 +73,12 @@ export function ReaderPage({ initialSectionId }: { initialSectionId?: string }) 
   const item = (s: Section, indent = 0) => (
     <button key={s.id} className={`list-item ${s.id === currentId ? 'active' : ''}`} style={{ paddingLeft: 10 + indent * 12 }} onClick={() => go(s.id)}>
       <span className="state">{data.bookmarks.includes(s.id) ? '🔖' : data.read.includes(s.id) ? '✓' : ''}</span>
-      <span>{s.title}</span>
+      <span style={{ flex: 1 }}>{s.title}</span>
+      {imageMap?.[s.id]?.length ? (
+        <span className="muted" title={`図 ${imageMap[s.id].length}枚`}>
+          <Icon name="image" size={13} />
+        </span>
+      ) : null}
     </button>
   );
 
@@ -168,6 +177,16 @@ export function ReaderPage({ initialSectionId }: { initialSectionId?: string }) 
             <div className="article-body">
               {current.body ? <Highlight text={current.body} query={query} /> : <span className="muted">（この見出しの本文は次の章に続きます）</span>}
             </div>
+            {figures.length > 0 && (
+              <div className="figures" aria-label="この章の図">
+                {figures.map((f, i) => (
+                  <button key={f} className="figure" onClick={() => setZoom(f)} aria-label={`図${i + 1}を拡大`}>
+                    <img src={imageUrl(f)} alt={`${current.title} の図${i + 1}`} loading="lazy" />
+                    <span className="small muted">図{i + 1}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="article-foot">
               <button className="btn" disabled={index <= 0} onClick={() => go(sections[index - 1].id)}>
                 ← 前の章
@@ -181,6 +200,12 @@ export function ReaderPage({ initialSectionId }: { initialSectionId?: string }) 
             </div>
           </div>
         </article>
+      )}
+      {zoom && (
+        <div className="lightbox" role="dialog" aria-label="図の拡大表示" onClick={() => setZoom(null)} onKeyDown={(e) => e.key === 'Escape' && setZoom(null)} tabIndex={-1}>
+          <img src={imageUrl(zoom)} alt="拡大した図" />
+          <span className="small muted">クリックで閉じる</span>
+        </div>
       )}
     </div>
   );
