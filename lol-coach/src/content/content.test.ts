@@ -35,3 +35,15 @@ describe('ワークブック模範解答', () => {
     }
   });
 });
+
+import { CHAMPIONS, guideSectionsFor } from '../core/champions';
+
+describe('チャンピオン辞書と教科書の対応', () => {
+  it('教科書のチャンピオン別ガイド見出しはすべて辞書のチャンピオンに紐づく', () => {
+    const guideTitles = sections.filter((s) => /^\d+\.\s*\S+.*(\([A-Za-z].*\)|完全攻略)/.test(s.title));
+    expect(guideTitles.length).toBeGreaterThan(25);
+    const linked = new Set(CHAMPIONS.flatMap((c) => guideSectionsFor(c.name, sections).map((s) => s.id)));
+    const missing = guideTitles.filter((s) => !linked.has(s.id)).map((s) => s.title);
+    expect(missing).toEqual([]);
+  });
+});
