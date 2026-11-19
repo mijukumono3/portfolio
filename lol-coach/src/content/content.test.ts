@@ -47,3 +47,11 @@ describe('チャンピオン辞書と教科書の対応', () => {
     expect(missing).toEqual([]);
   });
 });
+
+import { CHECKLIST } from '../core/checklist';
+
+describe('チェックリストの参照章', () => {
+  it.each(CHECKLIST.map((c) => [c.id, c.ref]))('%s -> %s が実在する', (_id, ref) => {
+    expect(getSection(ref)).toBeDefined();
+  });
+});

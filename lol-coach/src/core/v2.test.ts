@@ -12,6 +12,7 @@ describe('バックアップ', () => {
     read: [],
     sessions: [{ date: '2026-11-19', results: ['W' as const], notes: [''] }],
     insights: [],
+    replays: [],
   };
   it('書き出した内容をそのまま読み戻せる', () => {
     const r = parseBackup(serializeBackup(data, new Date('2026-11-19T00:00:00Z')));
@@ -35,6 +36,15 @@ describe('バックアップ', () => {
   it('勝敗にW/L以外が入っていればエラー', () => {
     const bad = { ...data, sessions: [{ date: '2026-11-19', results: ['X'], notes: [] }] };
     expect(parseBackup(JSON.stringify({ app: 'lol-coach', data: bad }))).toMatchObject({ ok: false });
+  });
+  it('振り返りチェックとリプレイノートも往復できる', () => {
+    const withV3 = {
+      ...data,
+      sessions: [{ date: '2026-11-19', results: ['W' as const], notes: [''], checks: [['vision-first']] }],
+      replays: [{ id: 'r1', date: '2026-11-19', player: 'Faker', champion: 'アーリ', role: 'mid', time: '03:30', situation: 'a', action: 'b', why: 'c', insight: 'd' }],
+    };
+    const r = parseBackup(serializeBackup(withV3));
+    expect(r.ok && r.data).toEqual(withV3);
   });
   it('欠けた項目は空で補う（古いバックアップ互換）', () => {
     const r = parseBackup(JSON.stringify({ app: 'lol-coach', data: { version: 1, answers: [] } }));

@@ -22,7 +22,7 @@ export function parseBackup(text: string): BackupResult {
     return { ok: false, error: 'LoL Coach のバックアップファイルではありません。' };
   }
   const d = raw.data;
-  const arrayKeys = ['answers', 'bookmarks', 'read', 'sessions', 'insights'] as const;
+  const arrayKeys = ['answers', 'bookmarks', 'read', 'sessions', 'insights', 'replays'] as const;
   for (const k of arrayKeys) {
     if (d[k] !== undefined && !Array.isArray(d[k])) return { ok: false, error: `「${k}」の形式が正しくありません。` };
   }
@@ -35,7 +35,8 @@ export function parseBackup(text: string): BackupResult {
   const sessions = (d.sessions ?? []) as unknown[];
   if (
     !sessions.every(
-      (s) => isObj(s) && typeof s.date === 'string' && Array.isArray(s.results) && s.results.every((r) => r === 'W' || r === 'L') && Array.isArray(s.notes),
+      (s) => isObj(s) && typeof s.date === 'string' && Array.isArray(s.results) && s.results.every((r) => r === 'W' || r === 'L') && Array.isArray(s.notes) &&
+        (s.checks === undefined || (Array.isArray(s.checks) && s.checks.every((c) => c === null || (Array.isArray(c) && c.every((x) => typeof x === 'string'))))),
     )
   ) {
     return { ok: false, error: '3戦セットの記録が壊れています。' };
@@ -52,6 +53,9 @@ export function parseBackup(text: string): BackupResult {
       sessions: sessions as AppData['sessions'],
       insights: ((d.insights ?? []) as unknown[]).filter(
         (x): x is AppData['insights'][number] => isObj(x) && typeof x.date === 'string' && typeof x.text === 'string',
+      ),
+      replays: ((d.replays ?? []) as unknown[]).filter(
+        (x): x is AppData['replays'][number] => isObj(x) && typeof x.id === 'string' && typeof x.date === 'string',
       ),
     },
   };

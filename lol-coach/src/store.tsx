@@ -8,6 +8,20 @@ export interface DaySession {
   date: string; // YYYY-MM-DD
   results: GameResult[];
   notes: string[]; // 試合ごとの振り返り
+  checks?: (string[] | null)[]; // 試合ごとの振り返りチェック（達成した項目ID）。未記入の試合は undefined
+}
+
+export interface ReplayNote {
+  id: string;
+  date: string;
+  player: string;
+  champion: string;
+  role: string;
+  time: string; // 試合内の時刻 mm:ss
+  situation: string;
+  action: string;
+  why: string;
+  insight: string;
 }
 
 export interface AppData {
@@ -18,6 +32,7 @@ export interface AppData {
   read: string[];
   sessions: DaySession[];
   insights: { date: string; text: string }[]; // 「悟り」ノート
+  replays: ReplayNote[]; // プロのリプレイ分析ノート
 }
 
 export const emptyData = (): AppData => ({
@@ -28,6 +43,7 @@ export const emptyData = (): AppData => ({
   read: [],
   sessions: [],
   insights: [],
+  replays: [],
 });
 
 interface Backend {
@@ -40,6 +56,9 @@ export interface AppBridge {
   exportBackup(json: string, defaultName: string): Promise<{ ok: boolean; canceled?: boolean; path?: string }>;
   importBackup(): Promise<{ ok: boolean; canceled?: boolean; text?: string }>;
   toggleMini(): Promise<boolean>;
+  importDocxImages(): Promise<{ ok: boolean; canceled?: boolean; count?: number; sections?: number; error?: string }>;
+  imageMap(): Promise<Record<string, string[]> | null>;
+  clearImages(): Promise<boolean>;
   info(): Promise<{ shortcut: string; version: string }>;
 }
 
