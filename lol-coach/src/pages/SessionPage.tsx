@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Icon, PageHeader, Panel } from '../components/ui';
 import { BASE_SET, evaluateSession, type GameResult } from '../core/session';
 import { todayKey, useStore, type DaySession } from '../store';
+
+const REST = 120;
 
 function WorkoutTimer() {
   const [left, setLeft] = useState<number | null>(null);
@@ -9,47 +12,82 @@ function WorkoutTimer() {
     const t = window.setTimeout(() => setLeft((l) => (l === null ? null : l - 1)), 1000);
     return () => window.clearTimeout(t);
   }, [left]);
-  const mm = String(Math.floor((left ?? 0) / 60)).padStart(2, '0');
-  const ss = String((left ?? 0) % 60).padStart(2, '0');
+  const v = left ?? REST;
+  const r = 66;
+  const c = 2 * Math.PI * r;
+  const done = left === 0;
   return (
-    <section className="card">
-      <h2>試合の合間に「筋トレ」</h2>
+    <Panel title="試合の合間に「筋トレ」" icon="timer">
       <p className="small muted">腕立て伏せを1〜2セット、限界まで。体と脳を覚醒させてから次の試合へ。</p>
-      <div className="row">
-        <span className="timer">{left === null ? '02:00' : `${mm}:${ss}`}</span>
-        {left === 0 && <span className="chip chip-gold">休憩終了！次の試合へ</span>}
+      <div className="timer-wrap">
+        <svg viewBox="0 0 150 150" aria-hidden>
+          <circle cx="75" cy="75" r={r} fill="none" stroke="var(--track)" strokeWidth="7" />
+          <circle
+            cx="75"
+            cy="75"
+            r={r}
+            fill="none"
+            stroke={done ? 'var(--good)' : 'var(--gold)'}
+            strokeWidth="7"
+            strokeLinecap="round"
+            strokeDasharray={`${(c * v) / REST} ${c}`}
+            transform="rotate(-90 75 75)"
+            style={{ transition: 'stroke-dasharray 1s linear' }}
+          />
+        </svg>
+        <div className="t" role="timer" aria-live="polite">
+          {done ? 'GO!' : `${String(Math.floor(v / 60)).padStart(2, '0')}:${String(v % 60).padStart(2, '0')}`}
+        </div>
       </div>
-      <div className="row">
-        <button className="btn btn-primary" onClick={() => setLeft(120)}>
-          2分スタート
+      <div className="row" style={{ justifyContent: 'center' }}>
+        <button className="btn btn-primary" onClick={() => setLeft(REST)}>
+          {left === null || done ? '2分スタート' : 'やり直す'}
         </button>
-        <button className="btn" onClick={() => setLeft(null)}>
+        <button className="btn btn-ghost" onClick={() => setLeft(null)}>
           リセット
         </button>
       </div>
-    </section>
+    </Panel>
   );
 }
 
 function WinRateChart({ results }: { results: GameResult[] }) {
-  if (results.length < 2) return <p className="muted small">2戦以上記録すると勝率の推移が表示されます。</p>;
+  const [hover, setHover] = useState<number | null>(null);
+  if (results.length < 2) return <p className="muted small">2戦以上記録すると、通算勝率の推移がここに表示されます。</p>;
   let wins = 0;
   const points = results.map((r, i) => {
     if (r === 'W') wins += 1;
-    return (wins / (i + 1)) * 100;
+    return Math.round((wins / (i + 1)) * 1000) / 10;
   });
   const w = 600;
-  const h = 120;
+  const h = 160;
   const x = (i: number) => (i / (points.length - 1)) * w;
   const y = (v: number) => h - (v / 100) * h;
   const path = points.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const onMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const i = Math.round(((e.clientX - rect.left) / rect.width) * (points.length - 1));
+    setHover(Math.max(0, Math.min(points.length - 1, i)));
+  };
   return (
-    <svg className="spark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-label="通算勝率の推移">
-      {[50, 55, 60].map((v) => (
-        <line key={v} x1={0} x2={w} y1={y(v)} y2={y(v)} stroke={v === 50 ? '#47526b' : '#2c3a59'} strokeDasharray="4 4" />
-      ))}
-      <path d={path} fill="none" stroke="#f0d68a" strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
-    </svg>
+    <div className="chart">
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-label={`通算勝率の推移。最新 ${points[points.length - 1]}%`} onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+        {[50, 55, 60].map((v) => (
+          <line key={v} x1={0} x2={w} y1={y(v)} y2={y(v)} stroke={v === 50 ? '#3a4868' : '#243250'} strokeDasharray="3 5" vectorEffect="non-scaling-stroke" />
+        ))}
+        <path d={path} fill="none" stroke="var(--gold-2)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+        {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={0} y2={h} stroke="#3a4868" vectorEffect="non-scaling-stroke" />}
+      </svg>
+      {hover !== null && (
+        <div className="tooltip" style={{ left: `${(hover / (points.length - 1)) * 100}%`, top: `${(y(points[hover]) / h) * 100}%` }}>
+          {hover + 1}戦目 <strong>{points[hover]}%</strong>（{results[hover] === 'W' ? '勝ち' : '負け'}）
+        </div>
+      )}
+      <div className="legend-line">
+        <span>点線：50% / 55%（上位20%）/ 60%（上位5%）</span>
+        <span style={{ marginLeft: 'auto' }}>最新 {points[points.length - 1]}%</span>
+      </div>
+    </div>
   );
 }
 
@@ -76,73 +114,83 @@ export function SessionPage() {
     update((d) => ({ ...d, insights: [{ date, text }, ...d.insights] }));
     setInsight('');
   };
-  const todayInsights = data.insights.filter((i) => i.date === date);
+  const todayInsights = data.insights.filter((i) => i.date === date).length;
 
   return (
     <div className="stack">
-      <header className="page-head">
-        <h1>3戦セット</h1>
-        <p className="muted">
-          基本は3戦固定。2連敗したら即終了。3戦で2勝1敗以上なら、負けるまで続行。集中力が続く「90分」を最高のコンディションで。
-        </p>
-      </header>
+      <PageHeader eyebrow="RULE 1 — 3戦セットの飴と鞭" title="3戦セット">
+        基本は3戦固定。2連敗したら即終了。3戦で2勝1敗以上なら、負けるまで続行。集中力が続く「90分」を最高のコンディションで。
+      </PageHeader>
 
-      <div className="grid grid-2">
-        <section className="card stack">
-          <h2>今日のランク戦（{date}）</h2>
-          <div className="games">
-            {Array.from({ length: slots }, (_, i) => {
-              const r = today.results[i];
-              return (
-                <div key={i} className={`game ${r ?? 'empty'}`} title={i >= BASE_SET ? '延長戦' : `${i + 1}戦目`}>
-                  {r ?? i + 1}
-                </div>
-              );
-            })}
+      <div className="grid split">
+        <Panel title={`今日のランク戦（${date}）`} icon="swords" action={<span className="chip num">{ev.wins}勝 {ev.losses}敗</span>}>
+          <div className="stack">
+            <div className="pips">
+              {Array.from({ length: slots }, (_, i) => {
+                const r = today.results[i];
+                const isNext = !r && i === today.results.length && ev.status === 'continue';
+                return (
+                  <div key={i} className={`pip ${r ?? ''} ${isNext ? 'next' : ''} ${i >= BASE_SET ? 'ext' : ''}`}>
+                    <b>{r ?? (isNext ? '▶' : i + 1)}</b>
+                    <span>{i >= BASE_SET ? '延長' : `${i + 1}戦目`}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className={`verdict ${ev.status}`}>
+              <span className="dot" />
+              <span>{ev.reason}</span>
+            </div>
+            <div className="result-btns">
+              <button className="btn-win" disabled={ev.status === 'stop'} onClick={() => record('W')}>
+                勝ち
+              </button>
+              <button className="btn-loss" disabled={ev.status === 'stop'} onClick={() => record('L')}>
+                負け
+              </button>
+            </div>
+            <div className="row spread">
+              <span className="small muted">{ev.phase === 'extension' ? '延長戦中：負けたら即終了' : `基本セット ${Math.min(today.results.length, BASE_SET)} / ${BASE_SET}`}</span>
+              <button className="btn btn-ghost" disabled={today.results.length === 0} onClick={undo}>
+                1つ戻す
+              </button>
+            </div>
           </div>
-          <div className={`status-banner ${ev.status}`}>{ev.reason}</div>
-          <div className="row">
-            <button className="btn btn-win" disabled={ev.status === 'stop'} onClick={() => record('W')}>
-              勝ち
-            </button>
-            <button className="btn btn-loss" disabled={ev.status === 'stop'} onClick={() => record('L')}>
-              負け
-            </button>
-            <button className="btn" disabled={today.results.length === 0} onClick={undo}>
-              1つ戻す
-            </button>
-          </div>
-          <div className="muted small">
-            今日 {ev.wins}勝{ev.losses}敗 {ev.phase === 'extension' ? '・延長戦中' : ''}
-          </div>
-        </section>
+        </Panel>
 
         <WorkoutTimer />
       </div>
 
       {today.results.length > 0 && (
-        <section className="card stack">
-          <h2>試合ごとの振り返り</h2>
-          {today.results.map((r, i) => (
-            <label key={i} className="field">
-              {i + 1}戦目（{r === 'W' ? '勝ち' : '負け'}）— 良かった判断・悪かった判断を一言で
-              <textarea style={{ minHeight: 60 }} value={today.notes[i] ?? ''} onChange={(e) => setNote(i, e.target.value)} />
-            </label>
-          ))}
-        </section>
+        <Panel title="試合ごとの振り返り" icon="pen" action={<span className="small muted">自動保存</span>}>
+          <div className="stack-sm">
+            {today.results.map((r, i) => (
+              <div key={i} className="note-row">
+                <div className={`pip ${r}`}>
+                  <b>{r}</b>
+                  <span>{i + 1}戦目</span>
+                </div>
+                <textarea
+                  aria-label={`${i + 1}戦目の振り返り`}
+                  placeholder="良かった判断・悪かった判断を一言で（例：3:30にボットへ行けた／視界なしでドラゴンに触った）"
+                  value={today.notes[i] ?? ''}
+                  onChange={(e) => setNote(i, e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+        </Panel>
       )}
 
       <div className="grid grid-2">
-        <section className="card stack">
-          <h2>「悟り」ノート</h2>
-          <p className="small muted">
-            著者はプロのリプレイを見て、気づきを毎日9行ずつ言語化しました。ノートが90ページでGM、200ページでチャレンジャー1000LP。今日 {todayInsights.length} / 9 行
+        <Panel title="「悟り」ノート" icon="flame" action={<span className="chip chip-gold num">今日 {todayInsights} / 9 行</span>}>
+          <p className="small muted" style={{ marginBottom: 12 }}>
+            著者はプロのリプレイから得た気づきを毎日9行ずつ言語化しました。ノート90ページでGM、200ページでチャレンジャー1000LP。
           </p>
-          <div className="row">
+          <div className="row" style={{ flexWrap: 'nowrap', marginBottom: 8 }}>
             <input
-              className="search"
-              style={{ flex: 1, margin: 0 }}
-              placeholder="例：ボットのサポートがCCタイプなら、仕掛けを待ってカウンターガンク"
+              type="text"
+              placeholder="例：CCサポートなら、仕掛けを待ってカウンターガンク"
               value={insight}
               onChange={(e) => setInsight(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addInsight()}
@@ -151,20 +199,26 @@ export function SessionPage() {
               追加
             </button>
           </div>
-          <ul className="small" style={{ margin: 0, paddingLeft: 20, maxHeight: 220, overflowY: 'auto' }}>
-            {data.insights.slice(0, 50).map((n, i) => (
-              <li key={i}>
-                <span className="muted">{n.date}</span> {n.text}
-              </li>
-            ))}
-          </ul>
-        </section>
+          {data.insights.length > 0 ? (
+            <ul className="insight-list">
+              {data.insights.slice(0, 60).map((n, i) => (
+                <li key={i}>
+                  <span>
+                    <Icon name="spark" size={14} />
+                  </span>
+                  <span style={{ flex: 1 }}>{n.text}</span>
+                  <span className="small muted num">{n.date.slice(5)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="small muted">まだ記録がありません。</p>
+          )}
+        </Panel>
 
-        <section className="card">
-          <h2>通算勝率の推移</h2>
+        <Panel title="通算勝率の推移" icon="spark">
           <WinRateChart results={allResults} />
-          <p className="muted small">点線: 50% / 55%（上位20%）/ 60%（上位5%）。勝率は「最強の武器」であり「盾」。</p>
-        </section>
+        </Panel>
       </div>
     </div>
   );

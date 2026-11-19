@@ -5,8 +5,10 @@ import { DrillPage } from './pages/DrillPage';
 import { WorkbookPage } from './pages/WorkbookPage';
 import { MatchupPage } from './pages/MatchupPage';
 import { SessionPage } from './pages/SessionPage';
-import { useStore } from './store';
+import { todayKey, useStore } from './store';
 import type { Subject } from './core/progress';
+import { evaluateSession } from './core/session';
+import { Icon, type IconName } from './components/ui';
 
 export type Route =
   | { page: 'home' }
@@ -18,21 +20,33 @@ export type Route =
 
 export type Navigate = (r: Route) => void;
 
-const NAV: { page: Route['page']; label: string; icon: string }[] = [
-  { page: 'home', label: 'ホーム', icon: '⌂' },
-  { page: 'session', label: '3戦セット', icon: '⚔' },
-  { page: 'drill', label: '判断力ドリル', icon: '✎' },
-  { page: 'workbook', label: 'ワークブック', icon: '❏' },
-  { page: 'matchup', label: 'ガンク判定', icon: '⌖' },
-  { page: 'reader', label: '教科書', icon: '❖' },
+const NAV: { group: string; items: { page: Route['page']; label: string; icon: IconName }[] }[] = [
+  { group: 'OVERVIEW', items: [{ page: 'home', label: 'ホーム', icon: 'home' }] },
+  {
+    group: 'TRAINING',
+    items: [
+      { page: 'session', label: '3戦セット', icon: 'swords' },
+      { page: 'drill', label: '判断力ドリル', icon: 'target' },
+      { page: 'workbook', label: 'ワークブック', icon: 'pen' },
+    ],
+  },
+  {
+    group: 'KNOWLEDGE',
+    items: [
+      { page: 'matchup', label: 'ガンク判定', icon: 'map' },
+      { page: 'reader', label: '教科書', icon: 'book' },
+    ],
+  },
 ];
 
 export function App() {
   const [route, setRoute] = useState<Route>({ page: 'home' });
-  const { loaded } = useStore();
+  const { loaded, data } = useStore();
+  const today = data.sessions.find((x) => x.date === todayKey())?.results ?? [];
+  const todayEval = evaluateSession(today);
   const navigate: Navigate = (r) => {
     setRoute(r);
-    document.querySelector('.main')?.scrollTo(0, 0);
+    document.querySelector('.main')?.scrollTo({ top: 0 });
   };
 
   return (
@@ -42,23 +56,42 @@ export function App() {
           <span className="brand-mark">LC</span>
           <div>
             <div className="brand-name">LoL Coach</div>
-            <div className="brand-sub">LOLの教科書で上達</div>
+            <div className="brand-sub">LOLの教科書で上達する</div>
           </div>
         </div>
-        {NAV.map((n) => (
-          <button
-            key={n.page}
-            className={`nav-item ${route.page === n.page ? 'active' : ''}`}
-            onClick={() => navigate({ page: n.page } as Route)}
-          >
-            <span className="nav-icon" aria-hidden>
-              {n.icon}
-            </span>
-            {n.label}
-          </button>
+        {NAV.map((g) => (
+          <div key={g.group}>
+            <div className="nav-group">{g.group}</div>
+            {g.items.map((n) => (
+              <button
+                key={n.page}
+                className={`nav-item ${route.page === n.page ? 'active' : ''}`}
+                aria-current={route.page === n.page ? 'page' : undefined}
+                onClick={() => navigate({ page: n.page } as Route)}
+              >
+                <Icon name={n.icon} />
+                {n.label}
+              </button>
+            ))}
+          </div>
         ))}
+        <button className="sidebar-foot" style={{ textAlign: 'left' }} onClick={() => navigate({ page: 'session' })}>
+          <div className="small muted">今日のランク戦</div>
+          <div style={{ fontWeight: 700 }}>
+            {today.length === 0 ? 'まだ未プレイ' : `${todayEval.wins}勝${todayEval.losses}敗`}
+            <span className={`chip ${todayEval.status === 'stop' ? 'chip-enemy' : 'chip-ally'}`} style={{ marginLeft: 8 }}>
+              {todayEval.status === 'stop' ? '終了' : '続行可'}
+            </span>
+          </div>
+          <div className="mini-pips">
+            {Array.from({ length: Math.max(3, today.length) }, (_, i) => (
+              <span key={i} className={today[i] ?? ''} />
+            ))}
+          </div>
+        </button>
       </nav>
       <main className="main">
+        <div className="content" key={route.page}>
         {!loaded ? (
           <p className="muted">読み込み中…</p>
         ) : route.page === 'home' ? (
@@ -74,6 +107,7 @@ export function App() {
         ) : (
           <SessionPage />
         )}
+        </div>
       </main>
     </div>
   );
