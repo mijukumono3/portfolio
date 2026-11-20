@@ -1,0 +1,46 @@
+{
+  "name": "lol-coach",
+  "productName": "LoL Coach",
+  "version": "0.3.0",
+  "description": "LOLの教科書で学ぶ初心者向け上達アプリ",
+  "main": "electron/main.cjs",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "start": "npm run build && electron .",
+    "textbook": "node scripts/build-textbook.mjs",
+    "dist:win": "npm run build && electron-builder --win zip --x64"
+  },
+  "build": {
+    "appId": "com.mijukumono3.lolcoach",
+    "files": [
+      "dist/**",
+      "electron/**",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "zip",
+      "signAndEditExecutable": false
+    }
+  },
+  "dependencies": {
+    "fflate": "^0.8.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.9"
+  }
+}
